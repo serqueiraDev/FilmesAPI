@@ -1,4 +1,5 @@
 ﻿using FilmesAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilmesAPI.Controllers;
@@ -11,10 +12,11 @@ public class FilmeController : ControllerBase
     private static int id = 1;
     
     [HttpPost]
-    public void AdicionarFilme([FromBody] Filme filme)
+    public IActionResult AdicionarFilme([FromBody] Filme filme)
     {
         filme.Id = id++;
         filmes.Add(filme);
+        return CreatedAtAction(nameof(RecuperarFilmePorId), new { id = filme.Id }, filme);
     }
 
     [HttpGet]
@@ -24,9 +26,12 @@ public class FilmeController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public Filme? RecuperarFilmePorId(int id)
+    public IActionResult RecuperarFilmePorId(int id)
     {
-        return filmes.FirstOrDefault(filme => filme.Id == id);
+        var filme = filmes.FirstOrDefault(filme => filme.Id == id);
+        if (filme == null)
+            return NotFound();
+        return Ok(filme);
     }
 
     [HttpGet("{skip}/{take}")]
